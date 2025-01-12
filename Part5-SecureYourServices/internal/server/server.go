@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 
-	log_v1 "github.com/distributed_service_go/Part4-ch4-ServerRequestWithgRPC/api/v1"
+	log_v1 "github.com/distributed_service_go/Part5-SecureYourServices/api/v1"
 	"google.golang.org/grpc"
 )
 
@@ -94,7 +94,7 @@ func (s *grpcServer) ConsumeStream(
 
 }
 
-func NewGRPCServer(config *Config) (*grpc.Server, error) {
+func NewGRPCServer(config *Config, opts ...grpc.ServerOption) (*grpc.Server, error) {
 	gsrv := grpc.NewServer()
 	srv, err := newgrpcServer(config)
 	if err != nil {

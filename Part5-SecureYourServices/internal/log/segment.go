@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	log_v1 "github.com/distributed_service_go/Part4-ch4-ServerRequestWithgRPC/api/v1"
+	log_v1 "github.com/distributed_service_go/Part5-SecureYourServices/api/v1"
 	"google.golang.org/protobuf/proto"
 )
 

@@ -4,7 +4,6 @@ import (
 	"io"
 	"os"
 
-	"github.com/distributed_service_go/Part4-ch4-ServerRequestWithgRPC/internal/server"
 	"github.com/tysonmote/gommap"
 )
 
@@ -16,12 +15,13 @@ var (
 )
 
 type index struct {
-	file *os.File
-	mmap gommap.MMap
-	size uint64
+	file   *os.File
+	mmap   gommap.MMap
+	size   uint64
+	config Config
 }
 
-func newIndex(f *os.File, c server.Config) (*index, error) {
+func newIndex(f *os.File, c Config) (*index, error) {
 	idx := &index{
 		file: f,
 	}

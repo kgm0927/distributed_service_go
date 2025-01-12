@@ -6,11 +6,13 @@ import (
 	"os"
 	"testing"
 
-	log_v1 "github.com/distributed_service_go/Part4-ch4-ServerRequestWithgRPC/api/v1"
-	"github.com/distributed_service_go/Part4-ch4-ServerRequestWithgRPC/internal/log"
+	log_v1 "github.com/distributed_service_go/Part5-SecureYourServices/api/v1"
+	"github.com/distributed_service_go/Part5-SecureYourServices/internal/config"
+	"github.com/distributed_service_go/Part5-SecureYourServices/internal/log"
+
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 )
 
@@ -40,13 +42,33 @@ func setupTest(t *testing.T, fn func(*Config)) (
 
 	t.Helper()
 
-	l, err := net.Listen("tcp", ":0")
-
+	l, err := net.Listen("tcp", "127.0.0.1:0")
 	require.NoError(t, err)
 
-	clientOption := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	cc, err := grpc.NewClient(l.Addr().String(), clientOption...) // 책에 있는 내용과 약간 다름.
+	clientTLSConfig, err := config.SetupTLSConfig(config.TLSConfig{
+
+		CAFile: config.CAFile,
+	})
 	require.NoError(t, err)
+	clientCreds := credentials.NewTLS(clientTLSConfig)
+
+	cc, err := grpc.NewClient(
+		l.Addr().String(),
+		grpc.WithTransportCredentials(clientCreds),
+	)
+	require.NoError(t, err)
+
+	client = log_v1.NewLogClient(cc)
+
+	serverTLSConfig, err := config.SetupTLSConfig(config.TLSConfig{
+		CertFile:      config.ServerCertFile,
+		KeyFile:       config.ServerKeyFile,
+		CAFile:        config.CAFile,
+		ServerAddress: l.Addr().String(),
+	})
+
+	require.NoError(t, err)
+	serverCreds := credentials.NewTLS(serverTLSConfig)
 
 	dir, err := os.MkdirTemp("", "server-test")
 	require.NoError(t, err)
@@ -61,18 +83,18 @@ func setupTest(t *testing.T, fn func(*Config)) (
 	if fn != nil {
 		fn(cfg)
 	}
-	server, err := NewGRPCServer(cfg)
+	server, err := NewGRPCServer(cfg, grpc.Creds(serverCreds))
 	require.NoError(t, err)
 
 	go func() {
 		server.Serve(l)
 	}()
-	client = log_v1.NewLogClient(cc)
+
 	return client, cfg, func() {
 		server.Stop()
 		cc.Close()
 		l.Close()
-		clog.Remove()
+
 	}
 }
 

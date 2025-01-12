@@ -53,3 +53,7 @@ func TestIndex(t *testing.T) {
 	require.Equal(t, uint32(1), off)
 	require.Equal(t, entries[1].Pos, pos)
 }
+
+// ┌──(kali㉿kali)-[~/…/distributed_service_go/Part3-WriteALogPackage/internal/log]
+// └─$ go test index_test.go index.go config.go store.go
+// ok      command-line-arguments  0.005s

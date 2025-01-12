@@ -14,8 +14,6 @@ var (
 	entWidth        = offWidth + posWidth
 )
 
-// entWidth는 오프셋이 가리키는 위치를 계산(offset*entWidth)할 때 사용한다.
-
 type index struct {
 	file *os.File
 	mmap gommap.MMap
@@ -32,14 +30,9 @@ func newIndex(f *os.File, c Config) (*index, error) {
 	}
 	idx.size = uint64(fi.Size()) // 현재 사이즈 저장
 	// 일단 최대 사이즈로 Truncate() 해줘서 mmap 대비
-
 	if err = os.Truncate(f.Name(), int64(c.Segment.MaxIndexBytes)); err != nil {
 		return nil, err
 	}
-
-	// fd는 **파일 디스크립터(file descriptor)**를 의미하는 것으로,
-	// 운영 체제에서 파일, 소켓, 파이프와 같은 입력/출력 리소스를 참조하는 정수 값입니다.
-
 	if idx.mmap, err = gommap.Map(idx.file.Fd(),
 		gommap.PROT_READ|gommap.PROT_WRITE, gommap.MAP_SHARED); err != nil {
 		return nil, err
@@ -64,7 +57,7 @@ func (i *index) Close() error {
 }
 
 // in 번째 인덱스를 읽어서
-// 앞에 4바이트는 out, 그 다음 8바이트는 pos 정보로 파싱해서 리턴한다.
+// 앞에 4바이트는 out, 그 다음 8바이트는 pos 정보로 파싱해서 리턴하가.
 func (i *index) Read(in int64) (out uint32, pos uint64, err error) {
 	if i.size == 0 {
 		return 0, 0, io.EOF

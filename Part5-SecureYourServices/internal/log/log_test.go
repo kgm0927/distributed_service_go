@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	log_v1 "github.com/distributed_service_go/Part4-ch4-ServerRequestWithgRPC/api/v1"
+	log_v1 "github.com/distributed_service_go/Part5-SecureYourServices/api/v1"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 )
@@ -14,9 +14,10 @@ func TestLog(t *testing.T) {
 	for scenario, fn := range map[string]func(t *testing.T, log *Log){
 		"append and read a record succeeds": testAppendRead,
 		"offset out of range error":         testOutofRangeErr,
-		"init with existing segments":       testInExisting,
+		"init with existing segments":       testInitExisting,
 		"reader":                            testReader,
 		"truncate":                          testTruncate,
+		"make new segment":                  testNewSegment,
 	} {
 		t.Run(scenario, func(t *testing.T) {
 			dir, err := os.MkdirTemp("", "store-test")
@@ -53,7 +54,7 @@ func testOutofRangeErr(t *testing.T, log *Log) {
 	require.Equal(t, uint64(1), apiErr.Offset)
 }
 
-func testInExisting(t *testing.T, o *Log) {
+func testInitExisting(t *testing.T, o *Log) {
 	append := &log_v1.Record{
 		Value: []byte("hello world"),
 	}
@@ -118,4 +119,15 @@ func testTruncate(t *testing.T, log *Log) {
 	_, err = log.Read(0)
 	require.Error(t, err)
 
+}
+func testNewSegment(t *testing.T, log *Log) {
+	append := &log_v1.Record{
+		Value: []byte("hello world"),
+	}
+	for i := 0; i < 3; i++ {
+		_, err := log.Append(append)
+		require.NoError(t, err)
+	}
+
+	require.Equal(t, 3, len(log.segments))
 }

@@ -40,9 +40,6 @@ func (s *store) Append(p []byte) (n uint64, pos uint64, err error) {
 	defer s.mu.Unlock()
 	pos = s.size
 	if err := binary.Write(s.buf, enc, uint64(len(p))); err != nil {
-		// len(p)를 data 파라미터로 넣는 이유는 보통 데이터의 크기를 기록하기 위해서입니다.
-		// 이를 통해 후속 처리나 데이터 구조를 읽는 사람이 데이터의 정확한 크기를 알 수 있게 됩니다.
-
 		return 0, 0, err
 	}
 	w, err := s.buf.Write(p)
@@ -59,10 +56,6 @@ func (s *store) Read(pos uint64) ([]byte, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if err := s.buf.Flush(); err != nil {
-
-		// Flush()는 보통 버퍼링된 데이터를 실제 출력 스트림으로 강제로 전송하는 메서드입니다. 예를 들어, buf가 *bufio.Writer 타입이라면,
-		//  이 Flush 메서드는 내부 버퍼에 저장된 데이터를 디스크나 네트워크 같은 실제 대상에 출력합니다.
-
 		return nil, err
 	}
 

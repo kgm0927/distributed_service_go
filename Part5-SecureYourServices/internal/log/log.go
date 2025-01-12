@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 
-	log_v1 "github.com/distributed_service_go/Part4-ch4-ServerRequestWithgRPC/api/v1"
+	log_v1 "github.com/distributed_service_go/Part5-SecureYourServices/api/v1"
 )
 
 type Log struct {
@@ -80,7 +80,7 @@ func (l *Log) Append(record *log_v1.Record) (uint64, error) {
 	defer l.mu.Unlock()
 
 	if l.activeSegment.IsMaxed() {
-		off := l.activeSegment.baseOffset
+		off := l.activeSegment.nextOffset
 		if err := l.newSegment(off); err != nil {
 			return 0, err
 		}
