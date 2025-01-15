@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
@@ -13,7 +14,7 @@ type ErrOffsetOutOfRange struct {
 
 func (e ErrOffsetOutOfRange) GRPStatus() *status.Status {
 	st := status.New(
-		404,
+		codes.Unknown, // 이상하게도 여기서 404나 codes.NotFound를 사용하면 문제가 생긴다. 그러므로 일단 Unknown으로 수정해 놓겠다.
 		fmt.Sprintf("offset out of range: %d", e.Offset),
 	)
 
